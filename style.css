@@ -991,17 +991,54 @@ button {
   width: 100%;
 }
 
+.cart-sheet {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(100%, 760px);
+  height: 48dvh;
+  max-height: 48dvh;
+  background: #fff;
+  border-radius: 32px 32px 0 0;
+  box-shadow: 0 -12px 35px rgba(0, 0, 0, .16);
+  padding: 22px 36px calc(18px + env(safe-area-inset-bottom));
+  z-index: 30;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transition: height .28s ease;
+  will-change: height;
+}
+
+.cart-toggle {
+  display: block;
+  width: 48px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: #aaa;
+  margin: -10px auto 15px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cart-toggle:active {
+  cursor: grabbing;
+}
+
 .cart-sheet.collapsed {
-  height: 68px;
-  min-height: 68px;
-  max-height: 68px;
+  height: 78px;
+  max-height: 78px;
   overflow: hidden;
-  padding: 12px 20px 8px;
+  padding-top: 18px;
+  padding-bottom: 10px;
 }
 
 .cart-sheet.collapsed .cart-toggle {
-  margin: 0;
-  min-height: 44px;
+  margin-bottom: 15px;
 }
 
 .cart-sheet.collapsed .cart-sheet-content {
