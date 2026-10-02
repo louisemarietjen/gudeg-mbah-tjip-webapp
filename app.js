@@ -159,8 +159,7 @@ const App = (() => {
 
   return `
     <aside class="cart-sheet ${cartCollapsed ? 'collapsed' : ''}">
-      <button class="cart-toggle"
-        onclick="App.toggleCart()"
+  <button type="button" class="cart-toggle"
         aria-label="${cartCollapsed ? 'Buka ringkasan pesanan' : 'Minimalkan ringkasan pesanan'}">
         <span class="cart-handle"></span>
         <span class="cart-toggle-text">
