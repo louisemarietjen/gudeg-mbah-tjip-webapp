@@ -111,7 +111,6 @@ const App = (() => {
             ? `Ringkasan Pesanan (${itemCount} item)`
             : 'Ringkasan Pesanan Anda'}
         </span>
-        <span class="cart-toggle-total">${money(totalVal)}</span>
       </button>
 
       <div class="cart-sheet-content">
