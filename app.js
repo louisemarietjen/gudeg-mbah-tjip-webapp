@@ -40,25 +40,57 @@ const App = (() => {
     .forEach(b => b.onclick = () => sub(b.dataset.sub));
 
   const handle = document.querySelector('.cart-toggle');
-  if (handle) {
-    let startY = 0;
+  const sheet = document.querySelector('.cart-sheet');
 
-    handle.addEventListener('touchstart', e => {
-      startY = e.touches[0].clientY;
-    }, { passive: true });
+  if (!handle || !sheet) return;
 
-    handle.addEventListener('touchend', e => {
-      const diff = e.changedTouches[0].clientY - startY;
+  let startY = 0;
+  let startHeight = 0;
+  let dragging = false;
 
-      if (diff < -40 && cartCollapsed) {
-        cartCollapsed = false;
-        render();
-      } else if (diff > 40 && !cartCollapsed) {
-        cartCollapsed = true;
-        render();
-      }
-    }, { passive: true });
+  handle.onclick = null;
+
+  handle.addEventListener('pointerdown', e => {
+    e.preventDefault();
+
+    dragging = true;
+    startY = e.clientY;
+    startHeight = sheet.getBoundingClientRect().height;
+
+    sheet.style.transition = 'none';
+    handle.setPointerCapture(e.pointerId);
+  });
+
+  handle.addEventListener('pointermove', e => {
+    if (!dragging) return;
+
+    const delta = startY - e.clientY;
+    const maxHeight = window.innerHeight * 0.48;
+    const newHeight = Math.max(
+      78,
+      Math.min(maxHeight, startHeight + delta)
+    );
+
+    sheet.style.height = `${newHeight}px`;
+  });
+
+  function finishDrag() {
+    if (!dragging) return;
+    dragging = false;
+
+    const currentHeight = sheet.getBoundingClientRect().height;
+    const maxHeight = window.innerHeight * 0.48;
+
+    cartCollapsed = currentHeight < (78 + maxHeight) / 2;
+
+    sheet.style.transition = '';
+    sheet.style.height = '';
+
+    render();
   }
+
+  handle.addEventListener('pointerup', finishDrag);
+  handle.addEventListener('pointercancel', finishDrag);
 }
   function homeView(){
     return `<section class="home-hero"><h1>Selamat Datang<br>di Warung<br>Gudeg Mbah Tjip</h1><p>Kami hadir dengan berbagai pilihan layanan untuk memudahkan Anda...</p></section>
