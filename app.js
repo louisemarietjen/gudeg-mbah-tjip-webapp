@@ -32,10 +32,34 @@ const App = (() => {
     updateBadge();
     bindCommon();
   }
-  function bindCommon(){
-    document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>add(b.dataset.add));
-    document.querySelectorAll('[data-sub]').forEach(b=>b.onclick=()=>sub(b.dataset.sub));
+  function bindCommon() {
+  document.querySelectorAll('[data-add]')
+    .forEach(b => b.onclick = () => add(b.dataset.add));
+
+  document.querySelectorAll('[data-sub]')
+    .forEach(b => b.onclick = () => sub(b.dataset.sub));
+
+  const handle = document.querySelector('.cart-toggle');
+  if (handle) {
+    let startY = 0;
+
+    handle.addEventListener('touchstart', e => {
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+
+    handle.addEventListener('touchend', e => {
+      const diff = e.changedTouches[0].clientY - startY;
+
+      if (diff < -40 && cartCollapsed) {
+        cartCollapsed = false;
+        render();
+      } else if (diff > 40 && !cartCollapsed) {
+        cartCollapsed = true;
+        render();
+      }
+    }, { passive: true });
   }
+}
   function homeView(){
     return `<section class="home-hero"><h1>Selamat Datang<br>di Warung<br>Gudeg Mbah Tjip</h1><p>Kami hadir dengan berbagai pilihan layanan untuk memudahkan Anda...</p></section>
       ${modeCard('🍽️','Makan di Tempat (Dine In)','Nikmati langsung hidangan hangat di tempat dengan suasana yang nyaman dan pelayanan terbaik dari kami.','dinein')}
