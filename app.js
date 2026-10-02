@@ -1,7 +1,6 @@
 const App = (() => {
   const KEY='gudeg_mbah_tjip_state_v1';
   let state = loadState();
-  let cartCollapsed = false;
 
   function loadState(){
     try { return JSON.parse(localStorage.getItem(KEY)) || freshState(); } catch { return freshState(); }
@@ -32,91 +31,10 @@ const App = (() => {
     updateBadge();
     bindCommon();
   }
-  function bindCommon() {
-  document.querySelectorAll('[data-add]')
-    .forEach(b => b.onclick = () => add(b.dataset.add));
-
-  document.querySelectorAll('[data-sub]')
-    .forEach(b => b.onclick = () => sub(b.dataset.sub));
-
-  const handle = document.querySelector('.cart-toggle');
-  const sheet = document.querySelector('.cart-sheet');
-
-  if (!handle || !sheet) return;
-
-  let startY = 0;
-  let startHeight = 0;
-  let dragging = false;
-
-  const collapsedHeight = 78;
-  const expandedHeight = Math.min(
-    window.innerHeight * 0.48,
-    window.innerHeight - 100
-  );
-
-  handle.addEventListener('pointerdown', e => {
-    e.preventDefault();
-
-    dragging = true;
-    startY = e.clientY;
-    startHeight = sheet.getBoundingClientRect().height;
-
-    sheet.style.transition = 'none';
-    handle.setPointerCapture(e.pointerId);
-  });
-
-  handle.addEventListener('pointermove', e => {
-    if (!dragging) return;
-
-    const delta = startY - e.clientY;
-    const nextHeight = Math.max(
-      collapsedHeight,
-      Math.min(expandedHeight, startHeight + delta)
-    );
-
-    sheet.style.height = `${nextHeight}px`;
-  });
-
-  function finishDrag(e) {
-    if (!dragging) return;
-    dragging = false;
-
-    const currentHeight = sheet.getBoundingClientRect().height;
-    const shouldCollapse = currentHeight <
-      (collapsedHeight + expandedHeight) / 2;
-
-    cartCollapsed = shouldCollapse;
-    sheet.classList.toggle('collapsed', shouldCollapse);
-
-    // Animate from the current dragged height to the chosen height.
-    sheet.style.transition = 'height 260ms cubic-bezier(.22,.8,.25,1)';
-    sheet.style.height = `${shouldCollapse ? collapsedHeight : expandedHeight}px`;
-
-    handle.releasePointerCapture?.(e.pointerId);
+  function bindCommon(){
+    document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>add(b.dataset.add));
+    document.querySelectorAll('[data-sub]').forEach(b=>b.onclick=()=>sub(b.dataset.sub));
   }
-
-  handle.addEventListener('pointerup', finishDrag);
-  handle.addEventListener('pointercancel', finishDrag);
-}
-
-  function finishDrag() {
-    if (!dragging) return;
-    dragging = false;
-
-    const currentHeight = sheet.getBoundingClientRect().height;
-    const maxHeight = window.innerHeight * 0.48;
-
-    cartCollapsed = currentHeight < (78 + maxHeight) / 2;
-
-    sheet.style.transition = '';
-    sheet.style.height = '';
-
-    render();
-  }
-
-  handle.addEventListener('pointerup', finishDrag);
-  handle.addEventListener('pointercancel', finishDrag);
-}
   function homeView(){
     return `<section class="home-hero"><h1>Selamat Datang<br>di Warung<br>Gudeg Mbah Tjip</h1><p>Kami hadir dengan berbagai pilihan layanan untuk memudahkan Anda...</p></section>
       ${modeCard('🍽️','Makan di Tempat (Dine In)','Nikmati langsung hidangan hangat di tempat dengan suasana yang nyaman dan pelayanan terbaik dari kami.','dinein')}
@@ -153,66 +71,10 @@ const App = (() => {
       <div class="menu-grid">${products.map(productCard).join('')}</div>${cartSheet(items)}`;
   }
   function productCard(p){const q=state.cart[p.id]||0;return `<article class="product-card"><img src="${p.image}" alt="${esc(p.name)}"><h3>${esc(p.name)}</h3><p class="price">${money(p.price)}</p><div class="qty-control"><button class="qty-btn" data-sub="${p.id}">−</button><span class="qty-number">${q}</span><button class="qty-btn" data-add="${p.id}">+</button></div></article>`}
-  function cartSheet(items) {
-  const totalVal = total();
-  const itemCount = items.reduce((sum, item) => sum + item.qty, 0);
-
-  return `
-    <aside class="cart-sheet ${cartCollapsed ? 'is-collapsed' : ''}">
-  <button class="cart-toggle"
-    onclick="App.toggleCart()"
-        aria-label="${cartCollapsed ? 'Buka ringkasan pesanan' : 'Minimalkan ringkasan pesanan'}">
-        <span class="cart-handle"></span>
-        <span class="cart-toggle-text">
-          ${cartCollapsed
-            ? `Ringkasan Pesanan (${itemCount} item)`
-            : 'Ringkasan Pesanan Anda'}
-        </span>
-      </button>
-
-      <div class="cart-sheet-content">
-        <div class="cart-head">
-          <span>Produk</span>
-          <span>Jumlah</span>
-          <span>Sub Total</span>
-        </div>
-
-        ${items.length ? items.map(x => `
-          <div class="cart-row">
-            <div class="cart-product">
-              <img src="${x.product.image}">
-              <div>
-                <strong>${esc(x.product.name)}</strong>
-                <span>${money(x.product.price)}</span>
-              </div>
-            </div>
-            <span>${x.qty} Pcs</span>
-            <span>${money(x.product.price * x.qty)}</span>
-          </div>
-        `).join('') : `
-          <div class="status-empty" style="padding:12px">
-            Belum ada menu yang dipilih.
-          </div>
-        `}
-
-        <div class="sheet-total">
-          <span>Total</span>
-          <span>${money(totalVal)}</span>
-        </div>
-
-        <button class="primary-btn sheet-btn"
-          onclick="App.nextMenu('${items.length ? '' : 'empty'}')">
-          SELANJUTNYA
-        </button>
-      </div>
-    </aside>
-  `;
-}
-
-  function toggleCart() {
-  cartCollapsed = !cartCollapsed;
-  render();
-}
+  function cartSheet(items){
+    const totalVal=total();
+    return `<aside class="cart-sheet"><h2>Ringkasan Pesanan Anda</h2><div class="cart-head"><span>Produk</span><span>Jumlah</span><span>Sub Total</span></div>${items.length?items.map(x=>`<div class="cart-row"><div class="cart-product"><img src="${x.product.image}"><div><strong>${esc(x.product.name)}</strong><span>${money(x.product.price)}</span></div></div><span>${x.qty} Pcs</span><span>${money(x.product.price*x.qty)}</span></div>`).join(''):`<div class="status-empty" style="padding:12px">Belum ada menu yang dipilih.</div>`}<div class="sheet-total"><span>Total</span><span>${money(totalVal)}</span></div><button class="primary-btn sheet-btn" onclick="App.nextMenu('${items.length?'':'empty'}')">SELANJUTNYA</button></aside>`;
+  }
 
   function checkoutView(){
     const items=cartItems();
@@ -282,6 +144,6 @@ const App = (() => {
   function toast(msg){const root=document.getElementById('modal-root');root.innerHTML=`<div class="toast">${esc(msg)}</div>`;setTimeout(()=>{if(root.querySelector('.toast'))root.innerHTML=''},1800)}
 
   function init(){window.addEventListener('hashchange',render);document.getElementById('menuBtn').onclick=()=>toast('Menu navigasi akan ditambahkan jika dibutuhkan.');render();}
-  return {init,go,startMode,add,sub,toggleCart,continueFromData,nextMenu,choosePayment,finishPayment,newOrder,openTableModal,selectTable,confirmTable,closeModal};
+  return {init,go,startMode,add,sub,continueFromData,nextMenu,choosePayment,finishPayment,newOrder,openTableModal,selectTable,confirmTable,closeModal};
 })();
 window.App=App;App.init();
