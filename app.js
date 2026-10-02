@@ -158,8 +158,9 @@ const App = (() => {
   const itemCount = items.reduce((sum, item) => sum + item.qty, 0);
 
   return `
-    <aside class="cart-sheet ${cartCollapsed ? 'collapsed' : ''}">
-  <button type="button" class="cart-toggle"
+    <aside class="cart-sheet ${cartCollapsed ? 'is-collapsed' : ''}">
+  <button class="cart-toggle"
+    onclick="App.toggleCart()"
         aria-label="${cartCollapsed ? 'Buka ringkasan pesanan' : 'Minimalkan ringkasan pesanan'}">
         <span class="cart-handle"></span>
         <span class="cart-toggle-text">
