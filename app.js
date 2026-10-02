@@ -112,7 +112,6 @@ const App = (() => {
             : 'Ringkasan Pesanan Anda'}
         </span>
         <span class="cart-toggle-total">${money(totalVal)}</span>
-        // <span class="cart-toggle-arrow">${cartCollapsed ? '⌃' : '⌄'}</span>
       </button>
 
       <div class="cart-sheet-content">
