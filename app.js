@@ -32,9 +32,49 @@ const App = (() => {
     bindCommon();
   }
   function bindCommon(){
-    document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>add(b.dataset.add));
-    document.querySelectorAll('[data-sub]').forEach(b=>b.onclick=()=>sub(b.dataset.sub));
+  document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>add(b.dataset.add));
+  document.querySelectorAll('[data-sub]').forEach(b=>b.onclick=()=>sub(b.dataset.sub));
+
+  const sheet = document.querySelector('.cart-sheet');
+  const handle = document.querySelector('.cart-sheet-handle');
+
+  if (sheet && handle) {
+    let startY = 0;
+    let startHeight = 0;
+    let dragging = false;
+
+    handle.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      startY = e.clientY;
+      startHeight = sheet.getBoundingClientRect().height;
+      sheet.style.height = `${startHeight}px`;
+      handle.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+
+    handle.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+
+      const delta = startY - e.clientY;
+      const minHeight = 150;
+      const maxHeight = window.innerHeight * 0.8;
+      const newHeight = Math.max(
+        minHeight,
+        Math.min(maxHeight, startHeight + delta)
+      );
+
+      sheet.style.height = `${newHeight}px`;
+    });
+
+    handle.addEventListener('pointerup', () => {
+      dragging = false;
+    });
+
+    handle.addEventListener('pointercancel', () => {
+      dragging = false;
+    });
   }
+}
   function homeView(){
     return `<section class="home-hero"><h1>Selamat Datang<br>di Warung<br>Gudeg Mbah Tjip</h1><p>Kami hadir dengan berbagai pilihan layanan untuk memudahkan Anda...</p></section>
       ${modeCard('🍽️','Makan di Tempat (Dine In)','Nikmati langsung hidangan hangat di tempat dengan suasana yang nyaman dan pelayanan terbaik dari kami.','dinein')}
@@ -72,9 +112,19 @@ const App = (() => {
   }
   function productCard(p){const q=state.cart[p.id]||0;return `<article class="product-card"><img src="${p.image}" alt="${esc(p.name)}"><h3>${esc(p.name)}</h3><p class="price">${money(p.price)}</p><div class="qty-control"><button class="qty-btn" data-sub="${p.id}">−</button><span class="qty-number">${q}</span><button class="qty-btn" data-add="${p.id}">+</button></div></article>`}
   function cartSheet(items){
-    const totalVal=total();
-    return `<aside class="cart-sheet"><h2>Ringkasan Pesanan Anda</h2><div class="cart-head"><span>Produk</span><span>Jumlah</span><span>Sub Total</span></div>${items.length?items.map(x=>`<div class="cart-row"><div class="cart-product"><img src="${x.product.image}"><div><strong>${esc(x.product.name)}</strong><span>${money(x.product.price)}</span></div></div><span>${x.qty} Pcs</span><span>${money(x.product.price*x.qty)}</span></div>`).join(''):`<div class="status-empty" style="padding:12px">Belum ada menu yang dipilih.</div>`}<div class="sheet-total"><span>Total</span><span>${money(totalVal)}</span></div><button class="primary-btn sheet-btn" onclick="App.nextMenu('${items.length?'':'empty'}')">SELANJUTNYA</button></aside>`;
-  }
+  const totalVal=total();
+  return `<aside class="cart-sheet">
+    <button class="cart-sheet-handle" type="button"
+      aria-label="Drag to resize order summary">
+      <span></span>
+    </button>
+    <h2>Ringkasan Pesanan Anda</h2>
+    <div class="cart-head"><span>Produk</span><span>Jumlah</span><span>Sub Total</span></div>
+    ${items.length?items.map(x=>`<div class="cart-row"><div class="cart-product"><img src="${x.product.image}"><div><strong>${esc(x.product.name)}</strong><span>${money(x.product.price)}</span></div></div><span>${x.qty} Pcs</span><span>${money(x.product.price*x.qty)}</span></div>`).join(''):`<div class="status-empty" style="padding:12px">Belum ada menu yang dipilih.</div>`}
+    <div class="sheet-total"><span>Total</span><span>${money(totalVal)}</span></div>
+    <button class="primary-btn sheet-btn" onclick="App.nextMenu('${items.length?'':'empty'}')">SELANJUTNYA</button>
+  </aside>`;
+}
 
   function checkoutView(){
     const items=cartItems();
