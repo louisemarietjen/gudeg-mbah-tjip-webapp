@@ -48,7 +48,11 @@ const App = (() => {
   let startHeight = 0;
   let dragging = false;
 
-  handle.onclick = null;
+  const collapsedHeight = 78;
+  const expandedHeight = Math.min(
+    window.innerHeight * 0.48,
+    window.innerHeight - 100
+  );
 
   handle.addEventListener('pointerdown', e => {
     e.preventDefault();
@@ -65,14 +69,35 @@ const App = (() => {
     if (!dragging) return;
 
     const delta = startY - e.clientY;
-    const maxHeight = window.innerHeight * 0.48;
-    const newHeight = Math.max(
-      78,
-      Math.min(maxHeight, startHeight + delta)
+    const nextHeight = Math.max(
+      collapsedHeight,
+      Math.min(expandedHeight, startHeight + delta)
     );
 
-    sheet.style.height = `${newHeight}px`;
+    sheet.style.height = `${nextHeight}px`;
   });
+
+  function finishDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+
+    const currentHeight = sheet.getBoundingClientRect().height;
+    const shouldCollapse = currentHeight <
+      (collapsedHeight + expandedHeight) / 2;
+
+    cartCollapsed = shouldCollapse;
+    sheet.classList.toggle('collapsed', shouldCollapse);
+
+    // Animate from the current dragged height to the chosen height.
+    sheet.style.transition = 'height 260ms cubic-bezier(.22,.8,.25,1)';
+    sheet.style.height = `${shouldCollapse ? collapsedHeight : expandedHeight}px`;
+
+    handle.releasePointerCapture?.(e.pointerId);
+  }
+
+  handle.addEventListener('pointerup', finishDrag);
+  handle.addEventListener('pointercancel', finishDrag);
+}
 
   function finishDrag() {
     if (!dragging) return;
