@@ -40,24 +40,37 @@ const App = (() => {
     .forEach(b => b.onclick = () => sub(b.dataset.sub));
 
   const handle = document.querySelector('.cart-toggle');
+
   if (handle) {
     let startY = 0;
+    let dragging = false;
 
-    handle.addEventListener('touchstart', e => {
-      startY = e.touches[0].clientY;
-    }, { passive: true });
+    handle.onclick = null;
 
-    handle.addEventListener('touchend', e => {
-      const diff = e.changedTouches[0].clientY - startY;
+    handle.addEventListener('pointerdown', e => {
+      startY = e.clientY;
+      dragging = true;
+      handle.setPointerCapture(e.pointerId);
+    });
 
-      if (diff < -40 && cartCollapsed) {
+    handle.addEventListener('pointerup', e => {
+      if (!dragging) return;
+
+      const diff = e.clientY - startY;
+      dragging = false;
+
+      if (diff < -30 && cartCollapsed) {
         cartCollapsed = false;
         render();
-      } else if (diff > 40 && !cartCollapsed) {
+      } else if (diff > 30 && !cartCollapsed) {
         cartCollapsed = true;
         render();
       }
-    }, { passive: true });
+    });
+
+    handle.addEventListener('pointercancel', () => {
+      dragging = false;
+    });
   }
 }
   function homeView(){
